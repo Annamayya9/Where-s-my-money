@@ -55,6 +55,7 @@ SPLITWISE_REDIRECT_URI = "http://localhost:8501"
 SPLITWISE_ACCESS_TOKEN = "replace_after_running_get_token"
 ```
 
+Register the app first with Splitwise here- https://secure.splitwise.com/oauth_clients
 Use the consumer key and consumer secret from your registered Splitwise app. Do not commit this file.
 
 5. Generate a Splitwise OAuth2 access token.
