@@ -1,14 +1,22 @@
 ﻿from __future__ import annotations
 
+import tomllib
+from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 from splitwise import Splitwise
-from streamlit.runtime.secrets import secrets_singleton
 
 
 def load_streamlit_secrets() -> dict:
-    secrets_singleton._parse()
-    return dict(secrets_singleton)
+    secrets_path = Path(".streamlit") / "secrets.toml"
+
+    if not secrets_path.exists():
+        raise FileNotFoundError(
+            "Missing .streamlit/secrets.toml. Add your Splitwise credentials there first."
+        )
+
+    with secrets_path.open("rb") as file:
+        return tomllib.load(file)
 
 
 def extract_code_and_state(redirected_url: str) -> tuple[str, str | None]:

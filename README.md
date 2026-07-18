@@ -1,10 +1,10 @@
-﻿# Splitwise Monthly Credit-Card Spending
+﻿# Splitwise Credit-Card Spending
 
-A small Streamlit app that connects to the Splitwise API and calculates monthly credit-card spending based on expenses where you paid upfront.
+A small Streamlit app that connects to the Splitwise API and calculates credit-card spending based on expenses where you paid upfront.
 
 ## What It Calculates
 
-For the selected month and year, the app fetches Splitwise expenses using pagination and includes only expenses where:
+For the selected month or custom date range, the app fetches Splitwise expenses using pagination and includes only expenses where:
 
 - the expense is not deleted
 - `payment == true` records are ignored
@@ -90,12 +90,12 @@ SPLITWISE_ACCESS_TOKEN = "your_real_splitwise_access_token"
 
 ```txt
 .
-â”œâ”€â”€ app.py
-â”œâ”€â”€ splitwise_client.py
-â”œâ”€â”€ requirements.txt
-â”œâ”€â”€ README.md
-â”œâ”€â”€ .gitignore
-â””â”€â”€ .streamlit/
-    â””â”€â”€ secrets.toml
+|-- app.py
+|-- splitwise_client.py
+|-- get_token.py
+|-- requirements.txt
+|-- README.md
+|-- .gitignore
+`-- .streamlit/
+    `-- secrets.toml
 ```
-

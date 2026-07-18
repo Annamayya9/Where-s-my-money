@@ -1,7 +1,7 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 
 import calendar
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
 import pandas as pd
@@ -12,7 +12,7 @@ from splitwise_client import SplitwiseClient, as_decimal
 
 st.set_page_config(page_title="Splitwise Credit Card Spending", layout="wide")
 
-st.title("Splitwise Monthly Credit-Card Spending")
+st.title("Splitwise Credit-Card Spending")
 
 access_token = st.secrets.get("SPLITWISE_ACCESS_TOKEN")
 if not access_token:
@@ -21,29 +21,56 @@ if not access_token:
 
 today = date.today()
 
-col1, col2 = st.columns(2)
-with col1:
-    selected_month = st.selectbox(
-        "Month",
-        options=list(range(1, 13)),
-        index=today.month - 1,
-        format_func=lambda month: calendar.month_name[month],
-    )
+date_mode = st.segmented_control(
+    "Date range",
+    options=["Month", "Custom"],
+    default="Month",
+)
 
-with col2:
-    selected_year = st.number_input(
-        "Year",
-        min_value=2000,
-        max_value=2100,
-        value=today.year,
-        step=1,
-    )
+if date_mode == "Month":
+    col1, col2 = st.columns(2)
+    with col1:
+        selected_month = st.selectbox(
+            "Month",
+            options=list(range(1, 13)),
+            index=today.month - 1,
+            format_func=lambda month: calendar.month_name[month],
+        )
 
-start_date = date(int(selected_year), int(selected_month), 1)
-if selected_month == 12:
-    end_date_exclusive = date(int(selected_year) + 1, 1, 1)
+    with col2:
+        selected_year = st.number_input(
+            "Year",
+            min_value=2000,
+            max_value=2100,
+            value=today.year,
+            step=1,
+        )
+
+    start_date = date(int(selected_year), int(selected_month), 1)
+    if selected_month == 12:
+        end_date_exclusive = date(int(selected_year) + 1, 1, 1)
+    else:
+        end_date_exclusive = date(int(selected_year), int(selected_month) + 1, 1)
+    range_label = f"{calendar.month_name[selected_month]} {int(selected_year)}"
 else:
-    end_date_exclusive = date(int(selected_year), int(selected_month) + 1, 1)
+    default_start = today.replace(day=1)
+    custom_range = st.date_input(
+        "Custom range",
+        value=(default_start, today),
+        max_value=today,
+    )
+
+    if len(custom_range) != 2:
+        st.info("Select a start date and end date.")
+        st.stop()
+
+    start_date, end_date_inclusive = custom_range
+    if start_date > end_date_inclusive:
+        st.error("Start date must be before or equal to end date.")
+        st.stop()
+
+    end_date_exclusive = end_date_inclusive + timedelta(days=1)
+    range_label = f"{start_date.isoformat()} to {end_date_inclusive.isoformat()}"
 
 
 def money(value: Decimal) -> str:
@@ -115,6 +142,8 @@ if st.button("Calculate spending", type="primary"):
             }
         )
 
+    st.caption(f"Showing expenses for {range_label}")
+
     metric_col1, metric_col2, metric_col3 = st.columns(3)
     metric_col1.metric("Total paid upfront", money(total_paid_upfront))
     metric_col2.metric("Actual personal spending", money(actual_personal_spending))
@@ -129,4 +158,4 @@ if st.button("Calculate spending", type="primary"):
             hide_index=True,
         )
     else:
-        st.info("No matching expenses found for this month.")
+        st.info("No matching expenses found for this date range.")
