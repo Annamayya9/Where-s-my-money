@@ -1,4 +1,6 @@
-streamlit>=1.36
+﻿streamlit>=1.36
 requests>=2.32
 python-dateutil>=2.9
 pandas>=2.2
+splitwise>=3.0.0
+

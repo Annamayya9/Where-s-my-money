@@ -1,4 +1,4 @@
-# Splitwise Monthly Credit-Card Spending
+﻿# Splitwise Monthly Credit-Card Spending
 
 A small Streamlit app that connects to the Splitwise API and calculates monthly credit-card spending based on expenses where you paid upfront.
 
@@ -49,12 +49,23 @@ pip install -r requirements.txt
 4. Create `.streamlit/secrets.toml`.
 
 ```toml
-SPLITWISE_ACCESS_TOKEN = "replace_with_your_splitwise_oauth_access_token"
+SPLITWISE_CONSUMER_KEY = "your_consumer_key"
+SPLITWISE_CONSUMER_SECRET = "your_consumer_secret"
+SPLITWISE_REDIRECT_URI = "http://localhost:8501"
+SPLITWISE_ACCESS_TOKEN = "replace_after_running_get_token"
 ```
 
-Use a Splitwise OAuth access token. Do not commit this file.
+Use the consumer key and consumer secret from your registered Splitwise app. Do not commit this file.
 
-5. Run the app.
+5. Generate a Splitwise OAuth2 access token.
+
+```bash
+python get_token.py
+```
+
+Open the printed authorization URL, approve the app, then paste the full redirected URL back into the terminal. Copy the printed `SPLITWISE_ACCESS_TOKEN` value into `.streamlit/secrets.toml`.
+
+6. Run the app.
 
 ```bash
 streamlit run app.py
@@ -79,11 +90,12 @@ SPLITWISE_ACCESS_TOKEN = "your_real_splitwise_access_token"
 
 ```txt
 .
-├── app.py
-├── splitwise_client.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-└── .streamlit/
-    └── secrets.toml
+â”œâ”€â”€ app.py
+â”œâ”€â”€ splitwise_client.py
+â”œâ”€â”€ requirements.txt
+â”œâ”€â”€ README.md
+â”œâ”€â”€ .gitignore
+â””â”€â”€ .streamlit/
+    â””â”€â”€ secrets.toml
 ```
+
