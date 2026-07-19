@@ -77,7 +77,7 @@ def money(value: Decimal) -> str:
     return f"${value.quantize(Decimal('0.01'))}"
 
 
-@st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False, ttl=300)
 def load_expenses(token: str, start: date, end: date) -> tuple[int, list[dict]]:
     client = SplitwiseClient(token)
     current_user_id = client.get_current_user_id()
@@ -159,3 +159,4 @@ if st.button("Calculate spending", type="primary"):
         )
     else:
         st.info("No matching expenses found for this date range.")
+
