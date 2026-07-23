@@ -23,9 +23,16 @@ today = date.today()
 
 date_mode = st.segmented_control(
     "Date range",
-    options=["Month", "Custom"],
-    default="Month",
+    options=["Month", "Custom", "Current billing cycle"],
+    default="Current billing cycle",
 )
+
+
+def add_one_month(value: date) -> date:
+    if value.month == 12:
+        return date(value.year + 1, 1, value.day)
+    return date(value.year, value.month + 1, value.day)
+
 
 if date_mode == "Month":
     col1, col2 = st.columns(2)
@@ -52,6 +59,19 @@ if date_mode == "Month":
     else:
         end_date_exclusive = date(int(selected_year), int(selected_month) + 1, 1)
     range_label = f"{calendar.month_name[selected_month]} {int(selected_year)}"
+elif date_mode == "Current billing cycle":
+    if today.day >= 19:
+        start_date = date(today.year, today.month, 19)
+    elif today.month == 1:
+        start_date = date(today.year - 1, 12, 19)
+    else:
+        start_date = date(today.year, today.month - 1, 19)
+
+    end_date_inclusive = add_one_month(start_date) - timedelta(days=1)
+    end_date_exclusive = end_date_inclusive + timedelta(days=1)
+    range_label = f"{start_date.isoformat()} to {end_date_inclusive.isoformat()}"
+
+    st.info(f"Current billing cycle: {range_label}")
 else:
     default_start = today.replace(day=1)
     custom_range = st.date_input(
@@ -71,7 +91,6 @@ else:
 
     end_date_exclusive = end_date_inclusive + timedelta(days=1)
     range_label = f"{start_date.isoformat()} to {end_date_inclusive.isoformat()}"
-
 
 def money(value: Decimal) -> str:
     return f"${value.quantize(Decimal('0.01'))}"
@@ -159,4 +178,5 @@ if st.button("Calculate spending", type="primary"):
         )
     else:
         st.info("No matching expenses found for this date range.")
+
 
