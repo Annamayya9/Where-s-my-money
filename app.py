@@ -23,8 +23,8 @@ today = date.today()
 
 date_mode = st.segmented_control(
     "Date range",
-    options=["Month", "Custom", "Current billing cycle"],
-    default="Current billing cycle",
+    options=["Month", "Custom", "Billing cycles"],
+    default="Billing cycles",
 )
 
 
@@ -32,6 +32,25 @@ def add_one_month(value: date) -> date:
     if value.month == 12:
         return date(value.year + 1, 1, value.day)
     return date(value.year, value.month + 1, value.day)
+
+
+def subtract_one_month(value: date) -> date:
+    if value.month == 1:
+        return date(value.year - 1, 12, value.day)
+    return date(value.year, value.month - 1, value.day)
+
+
+def current_billing_cycle_start(value: date) -> date:
+    if value.day >= 19:
+        return date(value.year, value.month, 19)
+    if value.month == 1:
+        return date(value.year - 1, 12, 19)
+    return date(value.year, value.month - 1, 19)
+
+
+def billing_cycle_label(cycle_start: date) -> str:
+    cycle_end = add_one_month(cycle_start) - timedelta(days=1)
+    return f"{cycle_start.isoformat()} to {cycle_end.isoformat()}"
 
 
 if date_mode == "Month":
@@ -59,19 +78,22 @@ if date_mode == "Month":
     else:
         end_date_exclusive = date(int(selected_year), int(selected_month) + 1, 1)
     range_label = f"{calendar.month_name[selected_month]} {int(selected_year)}"
-elif date_mode == "Current billing cycle":
-    if today.day >= 19:
-        start_date = date(today.year, today.month, 19)
-    elif today.month == 1:
-        start_date = date(today.year - 1, 12, 19)
-    else:
-        start_date = date(today.year, today.month - 1, 19)
+elif date_mode == "Billing cycles":
+    current_cycle_start = current_billing_cycle_start(today)
+    billing_cycle_starts = [current_cycle_start]
+    for _ in range(11):
+        billing_cycle_starts.append(subtract_one_month(billing_cycle_starts[-1]))
 
+    selected_cycle_start = st.selectbox(
+        "Billing cycle",
+        options=billing_cycle_starts,
+        format_func=billing_cycle_label,
+    )
+
+    start_date = selected_cycle_start
     end_date_inclusive = add_one_month(start_date) - timedelta(days=1)
     end_date_exclusive = end_date_inclusive + timedelta(days=1)
-    range_label = f"{start_date.isoformat()} to {end_date_inclusive.isoformat()}"
-
-    st.info(f"Current billing cycle: {range_label}")
+    range_label = billing_cycle_label(start_date)
 else:
     default_start = today.replace(day=1)
     custom_range = st.date_input(
@@ -178,5 +200,6 @@ if st.button("Calculate spending", type="primary"):
         )
     else:
         st.info("No matching expenses found for this date range.")
+
 
 
